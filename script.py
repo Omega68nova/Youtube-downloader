@@ -1,9 +1,12 @@
+import os
 from tkinter import *
 from tkinter.ttk import Combobox,Progressbar
 from modules.DownloadHandler import DownloadThreadHandler
 import tkinter.scrolledtext
 from threading import Thread
 
+def openDownloadFolder():
+    os.startfile(os.path.join(os.getcwd(), "./Downloads"))
 class App(object):
     def __init__(self):
         self.root =Tk()
@@ -27,6 +30,7 @@ class App(object):
         
         button = Button(self.root, text='Download', command =self.run)
         buttonClear = Button(self.root, text='Clear logs', command =self.clearLogs)
+        buttonOpenFolder = Button(self.root, text='Open Folder', command =openDownloadFolder)
         self.progressDic={}
         self.progressFrame = Frame(self.root,width=300, height=100)
         format_label.grid(row=0,column=0)
@@ -34,6 +38,7 @@ class App(object):
         url_label.grid(row=1,column=0)
         url_entry.grid(row=1,column=1)
         button.grid(row=2,column=1)
+        buttonOpenFolder.grid(row=3,column=0)
         buttonClear.grid(row=4,column=0)
         self.log_widget = tkinter.scrolledtext.ScrolledText(self.root,  font=("consolas", "8", "normal"),width=90)
         self.progressFrame.grid(row=3,column=1)
@@ -47,7 +52,6 @@ class App(object):
     def run(self):
         thread = Thread(target=self.submitCallBack)
         thread.start()
-    
     def getUrlCode(self,linkString):
         """ Gets the 11 char code from the given link if given one, else it returns false. """   
         if("youtu.be/" in linkString):

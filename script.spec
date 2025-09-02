@@ -4,7 +4,7 @@
 a = Analysis(
     ['script.py'],
     pathex=[],
-    binaries=[],
+    binaries=[('yt-dlp', '.')],
     datas=[],
     hiddenimports=[],
     hookspath=[],
@@ -29,11 +29,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['YT.ico'],
+    icon=['ico.ico'],
 )

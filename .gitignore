@@ -2,3 +2,5 @@ music/*
 *.m4a
 *.mp4
 /Downloads
+/build
+/dist
