@@ -1,6 +1,6 @@
 import sys
 from threading import Thread
-sys.path.append('./modules/yt-dlp')
+#sys.path.append('./modules/yt-dlp')
 import yt_dlp
 
 def sizeof_fmt(num, suffix="B"):

@@ -4,7 +4,7 @@
 a = Analysis(
     ['script.py'],
     pathex=[],
-    binaries=[('yt-dlp', '.')],
+    binaries=[],
     datas=[],
     hiddenimports=[],
     hookspath=[],

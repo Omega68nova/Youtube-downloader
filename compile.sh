@@ -1,0 +1,1 @@
+python -m PyInstaller --onefile -w 'script.py'  --icon=ico.ico
