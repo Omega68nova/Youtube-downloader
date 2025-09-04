@@ -1,3 +1,4 @@
+import os
 import sys
 from threading import Thread
 #sys.path.append('./modules/yt-dlp')
@@ -24,11 +25,12 @@ class DownloadThreadHandler(object):
     """    
     def __init__(self, app, format, url, name):
         self.app=app
+        self.app.log("Format:"+format)
         self.format=format
         self.url=url
         self.name = name
         self.logger= LogTreater(app, self.name)
-        app.addBar(name,("video" in format) or format=="default")
+        app.addBar(name,(format=="Video" or format=="Default"))
         self.thread = Thread(target=self.run)
         self.thread.start()
     def terminate(self):
@@ -39,20 +41,23 @@ class DownloadThreadHandler(object):
         elif self.format=="Video":
             format_selector=self.video_selector
         else:
-            format_selector=self.format.replace("audio:","").replace("video:","")           
+            #format_selector=""+self.format.replace("Audio:","").replace("Video:","")
+            pass       
             
         if self.format=='Default':
             ydl = yt_dlp.YoutubeDL({
                 'logger': self.logger,
                 'progress_hooks': [self.downloadProgressHook],
-                'paths':{'home':"./Downloads",'temp':'./temp'}
+                'paths':{'home':"./Downloads",'temp':'./temp'
+                         }
             })
         else:
             ydl = yt_dlp.YoutubeDL({
                 'logger': self.logger,
                 'progress_hooks': [self.downloadProgressHook],
                 'format': format_selector,
-                'paths':{'home':"./Downloads",'temp':'./temp'}
+                'paths':{'home':"./Downloads",'temp':'./temp'
+                         }
             })
         try:
             ydl.download(self.url)
@@ -60,24 +65,27 @@ class DownloadThreadHandler(object):
              self.app.log("Link "+self.url+" does not exist.")
              self.app.removeBar(self.name,-2)
         except Exception as e:
+            self.app.log("ERR")
             if hasattr(e, 'message'):
-                message = e.message
+                self.app.log("Error found.")
                 self.app.log(e.message)
                 self.app.removeBar( self.name,-2)
-                if message.startswith("Exception".encode('utf-8')):
+                if e.message.startswith("Exception"):
                     self.app.log("Exception found:")
-                    self.app.log(d.decode())
-                elif message.endswith("has already been downloaded".encode('utf-8')):
+                    self.app.log(e.message)
+                if e.message.endswith("has already been downloaded"):
                     self.app.log("File already downloaded.")
-                    self.app.removeBar(self.name,-1)
+                    self.app.removeBar(self.name,1)
                         
-                elif message.startswith("FileNotFoundError:".encode('utf-8')):
+                elif e.message.startswith("FileNotFoundError:"):
                     self.app.log("File not found.")
                     self.app.removeBar(self.name,-2)     
                 else:
                     self.app.removeBar( self.name,-2)
+                    self.app.log(e.message)
                     raise e 
-            
+            else:
+                raise e
     def video_selector(self, ctx):
         #""" Select the best video and the best audio that won't result in an mkv.
         #NOTE: This is just an example and does not handle all cases """
@@ -129,14 +137,17 @@ class DownloadThreadHandler(object):
         }
     def downloadProgressHook(self,d):
         if d['status'] == 'finished':
+            
             self.app.removeBar(self.name,1)
         elif d['status'] == 'downloading':
+            #filename  = d.get('info_dict').get('_filename')
             percent=" "+sizeof_fmt(int(d['downloaded_bytes']))
             if("total_bytes" in d):
                 percent=((int(d['downloaded_bytes'])/int(d['total_bytes']))*100)
             elif("total_bytes_estimate" in d):
                 percent=((int(d['downloaded_bytes'])/int(d['total_bytes_estimate']))*100)
-            self.app.updateBar(self.name,percent)
+            self.app.updateBar(self.name,percent#,filename
+                               )
         elif d['status'] == 'error':
             self.app.log("Error found.")
 
@@ -175,8 +186,11 @@ class LogTreater:
             self.info(msg)
 
     def info(self, msg):
-        if (""+msg).endswith("has already been downloaded"):
-            self.app.removeBar( self.name,-1)
+        #if (""+msg).endswith("has already been downloaded"):
+        #    self.app.removeBar( self.name,1)
+        #if (""+msg).endswith(".webm"):
+            #filename = (""+msg).split("\\temp\\")[1],
+            #os.rename("./Downloads/temp/"+filename, "./Downloads/"+filename)
         #if not (""+msg).startswtih("[download]"):
         self.app.log(self.name+": "+msg)
         #pass
@@ -185,7 +199,7 @@ class LogTreater:
         pass
 
     def error(self, msg):
-        self.app.log(self.name+" ERROR: "+msg)
+        self.app.log(self.name+ " "+ msg)
         if (""+msg).startswith("FileNotFoundError:"):
             self.app.removeBar(self.name,1)
 

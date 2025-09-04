@@ -128,7 +128,7 @@ class App(object):
         format = self.format.get()
         name=""
         if(code):
-            name = self.format.get().capitalize()+"["+code+"]"
+            name = self.format.get()+"["+code+"]"
             if  not name in self.progressDic:
                 #args = ["python", "ytdl.py", format,code]
                 #proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True)
@@ -155,6 +155,8 @@ class App(object):
             label.grid(row=0,column=0,sticky="nsew")
             def funcClose():
                 self.removeBar(name,-2)
+                
+                
             buttonClose = Button(downloadGrid, text='X', command = funcClose)
             buttonClose.grid(row=0,column=1,sticky="e")
             progress = IntVar()
@@ -172,9 +174,10 @@ class App(object):
             percent =99.9
         if self.progressDic[name]:
             self.progressDic[name][2].set(percent)
-        #self.root.update_idletasks()
+
         
     def removeBar(self, name,state):
+        self.log("RemoveBar called with state "+str(state)+"")
         if state==-1:
             self.log("Media already downloaded.")
         else:
@@ -189,11 +192,11 @@ class App(object):
             widgets[5].destroy()
             widgets[5].destroy()
             widgets[6].destroy()
-            
             if state>-1:
                 self.log(name+" finished downloading!")
             elif state == -2:
                 self.log(name+" cancelled.")
+
 
 
 if __name__ == "__main__":
