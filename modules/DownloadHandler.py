@@ -28,22 +28,32 @@ class DownloadThreadHandler(object):
         self.url=url
         self.name = name
         self.logger= LogTreater(app, self.name)
-        app.addBar(name,format=="video")
+        app.addBar(name,("video" in format) or format=="default")
         self.thread = Thread(target=self.run)
         self.thread.start()
     def terminate(self):
         self.thread.exit()
     def run (self):
-        if self.format=="audio":
+        if self.format=="Audio":
             format_selector=self.audio_selector
-        else:
+        elif self.format=="Video":
             format_selector=self.video_selector
-        ydl = yt_dlp.YoutubeDL({
-            'logger': self.logger,
-            'progress_hooks': [self.downloadProgressHook],
-            'format': format_selector,
-            'paths':{'home':"./Downloads",'temp':'./temp'}
-        })
+        else:
+            format_selector=self.format.replace("audio:","").replace("video:","")           
+            
+        if self.format=='Default':
+            ydl = yt_dlp.YoutubeDL({
+                'logger': self.logger,
+                'progress_hooks': [self.downloadProgressHook],
+                'paths':{'home':"./Downloads",'temp':'./temp'}
+            })
+        else:
+            ydl = yt_dlp.YoutubeDL({
+                'logger': self.logger,
+                'progress_hooks': [self.downloadProgressHook],
+                'format': format_selector,
+                'paths':{'home':"./Downloads",'temp':'./temp'}
+            })
         try:
             ydl.download(self.url)
         except yt_dlp.utils.DownloadError as e:
@@ -131,12 +141,12 @@ class DownloadThreadHandler(object):
             self.app.log("Error found.")
 
 class LogTreater:
-
+    """
+    Handles download threads logs, updating the given app using the function "app.log(name+":"+msg)" and handles some errors using "removeBar(name,number)". \n
+    """
     def __init__(self,#app,debugTreater=None,infoTreater=None,warningTreater=None,errorTreater=None, params=None):
                  app,name):
-        """
-        Handles download threads logs, updating the given app using the function "app.log(name+":"+msg)" and handles some errors using "removeBar(name,number)". \n
-        """
+
         self.app=app
         self.name=name
         ''' if(not debugTreater is None):

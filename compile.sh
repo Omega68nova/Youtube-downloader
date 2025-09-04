@@ -1,1 +1,1 @@
-python -m PyInstaller --onefile -w 'script.py'  --icon=ico.ico
+python -m PyInstaller --onefile -w 'YTDownloader.py'  --icon=ico.ico
