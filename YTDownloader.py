@@ -1,3 +1,4 @@
+import glob
 import os
 from tkinter import *
 from tkinter.ttk import Combobox,Progressbar
@@ -177,6 +178,10 @@ class App(object):
 
         
     def removeBar(self, name,state):
+        
+
+
+
         self.log("RemoveBar called with state "+str(state)+"")
         if state==-1:
             self.log("Media already downloaded.")
@@ -184,6 +189,13 @@ class App(object):
             if name in self.progressDic and self.progressDic[name][4]>0:
                 self.progressDic[name][4]-=1
         if state<0 or name in self.progressDic and self.progressDic[name][4]==0:
+            #fileset = [f for f in glob.glob("./Downloads/temp/*["+(""+name).split("[")[1].split("]")[0]+"].*")]
+ 
+            #for f in fileset:
+            #    try:
+            #        os.rename(f, (""+f).replace("/temp",""))
+            #    except:
+            #        pass
             widgets = self.progressDic.pop(name)
             widgets[0].forget()
             widgets[1].forget()

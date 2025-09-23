@@ -56,7 +56,7 @@ class DownloadThreadHandler(object):
                 'logger': self.logger,
                 'progress_hooks': [self.downloadProgressHook],
                 'format': format_selector,
-                'paths':{'home':"./Downloads",'temp':'./temp'
+                'paths':{'home':"./Downloads"#,'temp':'./temp'
                          }
             })
         try:
@@ -75,7 +75,7 @@ class DownloadThreadHandler(object):
                     self.app.log(e.message)
                 if e.message.endswith("has already been downloaded"):
                     self.app.log("File already downloaded.")
-                    self.app.removeBar(self.name,1)
+                    self.app.removeBar(self.name,-2)
                         
                 elif e.message.startswith("FileNotFoundError:"):
                     self.app.log("File not found.")
