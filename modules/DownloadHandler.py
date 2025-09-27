@@ -64,6 +64,10 @@ class DownloadThreadHandler(object):
         except yt_dlp.utils.DownloadError as e:
              self.app.log("Link "+self.url+" does not exist.")
              self.app.removeBar(self.name,-2)
+        except RuntimeError as e:
+                    self.app.log("Couldn't download media.")
+                    self.app.log(e.args)
+                    self.app.removeBar( self.name,-2)
         except Exception as e:
             self.app.log("ERR")
             if hasattr(e, 'message'):
@@ -85,7 +89,11 @@ class DownloadThreadHandler(object):
                     self.app.log(e.message)
                     raise e 
             else:
-                raise e
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(e).__name__, e.args)
+                    self.app.log(message)
+                    self.app.removeBar( self.name,-2)
+                    raise e
     def video_selector(self, ctx):
         #""" Select the best video and the best audio that won't result in an mkv.
         #NOTE: This is just an example and does not handle all cases """

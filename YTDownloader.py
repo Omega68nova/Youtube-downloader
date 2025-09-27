@@ -135,14 +135,27 @@ class App(object):
                 #proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True)
                 if  name in self.progressDic:
                     self.log(name+" is already downloading!")
-                    handler.terminate()
+                    #handler.terminate()
                 handler = DownloadThreadHandler(self,format,code, name)
                 
             else:
                  self.log(name+" is already downloading!")
         else:
-            self.log("Bad youtube URL.")
-            return
+            #self.log("Bad youtube URL.")
+            #return
+            #Assuming not a youtube link.
+            link =self.url.get()
+            name = self.format.get()+"["+link+"]"
+            if  not name in self.progressDic:
+                #args = ["python", "ytdl.py", format,code]
+                #proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True)
+                if  name in self.progressDic:
+                    self.log(name+" is already downloading!")
+                    #handler.terminate()
+                DownloadThreadHandler(self,format,code, name)
+                
+            else:
+                 self.log(name+" is already downloading!")
         
     def log(self,data):
         self.log_widget.config(state='normal')
