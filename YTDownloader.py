@@ -3,6 +3,7 @@ import os
 from tkinter import *
 from tkinter.ttk import Combobox,Progressbar
 from modules.DownloadHandler import DownloadThreadHandler
+from modules.InstaDownloadHandler import InstaDownloadThreadHandler
 import tkinter.scrolledtext
 from threading import Thread
 
@@ -19,13 +20,14 @@ class App(object):
         
         self.url = StringVar(value="")
         self.format = StringVar(value="Default")
+        self.browser = StringVar(value="None")
         
         self.menu_left_lower = Frame(self.menu_left, width=50)
 
         self.menu_left_upper.pack(side="top", fill="both", expand=True)
         self.menu_left_lower.pack(side="top", fill="both", expand=True)
 
-        self.menu_left.grid(row=0, column=0, rowspan=3, sticky="nsew")
+        self.menu_left.grid(row=0, column=0, rowspan=4, sticky="nsew")
         #self.some_title_frame.grid(row=0, column=1, sticky="ew")
         #self.canvas_area.grid(row=1, column=1, sticky="nsew") 
         #self.status_frame.grid(row=2, column=0, columnspan=2, sticky="ew")
@@ -40,7 +42,7 @@ class App(object):
         
 
         
-        format_label = Label(self.menu_left_upper, text = 'Format', font=('calibre',10, 'bold'))
+        format_label = Label(self.menu_left_upper, text = 'Format', font=('calibre',9, 'bold'))
         format_label.grid(row=0,column=0)
         
         formats = ['Default','Audio', 'Video', #'video:3gp', 'audio:aac', 'audio:flv', 'audio:m4a','audio:mp3','video:mp4','audio:ogg','audio:wav','video:webm']
@@ -48,7 +50,15 @@ class App(object):
         format_entry = Combobox(self.root, values = formats,textvariable = self.format,width=87,state='readonly')
         format_entry.grid(row=0,column=1,sticky="new")
         
-        url_label = Label(self.menu_left_upper, text = 'URL', font=('calibre',10, 'bold'))
+        cookies_label = Label(self.menu_left_upper, text = 'Browser \n (for Sites that need LogIn)', font=('calibre',9, 'bold'))
+        cookies_label.grid(row=2,column=0)
+        
+        browsers = ['None', 'firefox','chrome','opera', 'Or write the name of your browser (might not be supported)']
+    
+        browsers_entry = Combobox(self.root, values = browsers,textvariable = self.browser,width=87)
+        browsers_entry.grid(row=2,column=1,sticky="new")
+        
+        url_label = Label(self.menu_left_upper, text = 'URL', font=('calibre',9, 'bold'))
         
         self.url_entry = Entry(self.root, textvariable = self.url,width=50)
         
@@ -58,11 +68,11 @@ class App(object):
         self.url_entry.grid(row=1,column=1,sticky="new")
         
         downloadButton = Button(self.root, text='Download', command =self.run)
-        downloadButton.grid(row=2,column=1,sticky="new")
+        downloadButton.grid(row=3,column=1,sticky="new")
         
-        buttonOpenFolder.grid(row=3,column=0)
+        buttonOpenFolder.grid(row=4,column=0)
         
-        buttonClear.grid(row=4,column=0)
+        buttonClear.grid(row=5,column=0)
         self.log_widget = tkinter.scrolledtext.ScrolledText(self.root,  font=("consolas", "8", "normal"),width=50, height=8)
         #self.progressFrame.grid(row=1,column=1,sticky="nsew")
         self.log_widget.grid(row=2,column=1,sticky="nsew")
@@ -70,10 +80,10 @@ class App(object):
         self.progressDic={}
         self.progressFrame = tkinter.scrolledtext.ScrolledText(self.root,font=("consolas", "8", "normal"),width=50,height=5,background="#ababab")
         #Frame(self.root,width=300, height=100)
-        self.progressFrame.grid(row=3,column=1,sticky="nsew")
+        self.progressFrame.grid(row=4,column=1,sticky="nsew")
         
         
-        self.log_widget.grid(row=4,column=1)
+        self.log_widget.grid(row=5,column=1)
 
         
 
@@ -93,18 +103,21 @@ class App(object):
         thread.start()
     def getUrlCode(self,linkString):
         """ Gets the 11 char code from the given link if given one, else it returns false. """   
-        if("youtu.be/" in linkString):
-             linkString = linkString.split("youtu.be/",1)[1]
-             if("?" in linkString):
-                 linkString= linkString.split("?",1)[0]
-        elif("?v=" in linkString):
-             linkString = linkString.split("?v=",1)[1]
-             if("&" in linkString):
-                 linkString= linkString.split("&",1)[0]
-        if(len(linkString)==11):
-            return linkString
-        else:
-            return False
+        if("youtube" in linkString or "youtu.be" in linkString):
+            if("youtu.be/" in linkString):
+                linkString = linkString.split("youtu.be/",1)[1]
+
+            elif("?v=" in linkString):
+                linkString = linkString.split("?v=",1)[1]
+            elif("youtube.com/shorts/" in linkString):
+                linkString= linkString.split("/shorts/",1)[1]
+            if("?" in linkString):
+                    linkString= linkString.split("?",1)[0]
+            if("&" in linkString):
+                    linkString= linkString.split("&",1)[0]
+            if(len(linkString)==11):
+                return linkString
+        else: return linkString
             
     def openDownloadFolder(self):
         os.startfile(os.path.join(os.getcwd(), "./Downloads"))
@@ -117,6 +130,7 @@ class App(object):
 
     def paste(self):
             clipboard = self.root.clipboard_get() # Get the copied item from system clipboard
+            self.url_entry.delete(0,END)
             self.url_entry.insert('end',clipboard) # Insert the item into the entry widget
 
     def copy(self):
@@ -127,35 +141,18 @@ class App(object):
     def submitCallBack(self):
         code = self.getUrlCode(self.url.get())
         format = self.format.get()
-        name=""
-        if(code):
-            name = self.format.get()+"["+code+"]"
-            if  not name in self.progressDic:
+        browser = self.browser.get()
+        name = self.format.get()+"["+code+"]"
+        if  not name in self.progressDic:
                 #args = ["python", "ytdl.py", format,code]
                 #proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True)
                 if  name in self.progressDic:
                     self.log(name+" is already downloading!")
                     #handler.terminate()
-                handler = DownloadThreadHandler(self,format,code, name)
-                
-            else:
-                 self.log(name+" is already downloading!")
+                DownloadThreadHandler(self,format,code, name,browser)
         else:
-            #self.log("Bad youtube URL.")
-            #return
-            #Assuming not a youtube link.
-            link =self.url.get()
-            name = self.format.get()+"["+link+"]"
-            if  not name in self.progressDic:
-                #args = ["python", "ytdl.py", format,code]
-                #proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True)
-                if  name in self.progressDic:
-                    self.log(name+" is already downloading!")
-                    #handler.terminate()
-                DownloadThreadHandler(self,format,code, name)
-                
-            else:
                  self.log(name+" is already downloading!")
+                
         
     def log(self,data):
         self.log_widget.config(state='normal')
@@ -191,10 +188,6 @@ class App(object):
 
         
     def removeBar(self, name,state):
-        
-
-
-
         self.log("RemoveBar called with state "+str(state)+"")
         if state==-1:
             self.log("Media already downloaded.")

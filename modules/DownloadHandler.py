@@ -23,10 +23,13 @@ class DownloadThreadHandler(object):
         Removes the progress bar or handler of the name with a code (-1 = already downloaded, 0 or higher = good download, -2 cancelled, other negative numbers won't give any messages.).\n
     Aside from that it requires a format (for now accepted values are "audio" and "video"), youtube url (the 11 char code at the end of youtube videos), and the name for distinction by the app.
     """    
-    def __init__(self, app, format, url, name):
+    def __init__(self, app, format, url, name,browser):
         self.app=app
         self.app.log("Format:"+format)
         self.format=format
+        self.browser=browser
+        if(self.browser=="None"):
+            self.browser=None
         self.url=url
         self.name = name
         self.logger= LogTreater(app, self.name)
@@ -48,7 +51,8 @@ class DownloadThreadHandler(object):
             ydl = yt_dlp.YoutubeDL({
                 'logger': self.logger,
                 'progress_hooks': [self.downloadProgressHook],
-                'paths':{'home':"./Downloads",'temp':'./temp'
+                'cookies_from_browser': self.browser,
+                'paths':{'home':"./Downloads"#,'temp':'./temp'
                          }
             })
         else:
@@ -56,6 +60,7 @@ class DownloadThreadHandler(object):
                 'logger': self.logger,
                 'progress_hooks': [self.downloadProgressHook],
                 'format': format_selector,
+                'cookies_from_browser': self.browser,
                 'paths':{'home':"./Downloads"#,'temp':'./temp'
                          }
             })
@@ -68,6 +73,16 @@ class DownloadThreadHandler(object):
                     self.app.log("Couldn't download media.")
                     self.app.log(e.args)
                     self.app.removeBar( self.name,-2)
+        except KeyError as e:
+            if('vcodec' in e.args):
+                self.app.removeBar( self.name,-2)
+                self.app.log("Website doesn't allow the selected format. Please select default.")
+            else:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(e).__name__, e.args)
+                    self.app.log(message)
+                    self.app.removeBar( self.name,-2)
+                    raise e
         except Exception as e:
             self.app.log("ERR")
             if hasattr(e, 'message'):
@@ -79,7 +94,7 @@ class DownloadThreadHandler(object):
                     self.app.log(e.message)
                 if e.message.endswith("has already been downloaded"):
                     self.app.log("File already downloaded.")
-                    self.app.removeBar(self.name,-2)
+                    self.app.removeBar(self.name,-1)
                         
                 elif e.message.startswith("FileNotFoundError:"):
                     self.app.log("File not found.")
@@ -194,8 +209,8 @@ class LogTreater:
             self.info(msg)
 
     def info(self, msg):
-        #if (""+msg).endswith("has already been downloaded"):
-        #    self.app.removeBar( self.name,1)
+        if (""+msg).endswith("has already been downloaded"):
+            self.app.removeBar( self.name,-1)
         #if (""+msg).endswith(".webm"):
             #filename = (""+msg).split("\\temp\\")[1],
             #os.rename("./Downloads/temp/"+filename, "./Downloads/"+filename)
