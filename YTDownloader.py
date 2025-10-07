@@ -3,7 +3,7 @@ import os
 from tkinter import *
 from tkinter.ttk import Combobox,Progressbar
 from modules.DownloadHandler import DownloadThreadHandler
-from modules.InstaDownloadHandler import InstaDownloadThreadHandler
+import tkinter.scrolledtext
 import tkinter.scrolledtext
 from threading import Thread
 
