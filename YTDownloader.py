@@ -102,7 +102,7 @@ class App(object):
         thread = Thread(target=self.submitCallBack)
         thread.start()
     def getUrlCode(self,linkString):
-        """ Gets the 11 char code from the given link if given one, else it returns false. """   
+        """ Checks wheter the given url is a youtube link and if so gets the 11 char code  and True from the given link if given one and the link is a youtube link, else it returns the original link and False. Examples: youtube link -> ("11charString",True), other link-> ("other link", False) """   
         if("youtube" in linkString or "youtu.be" in linkString):
             if("youtu.be/" in linkString):
                 linkString = linkString.split("youtu.be/",1)[1]
@@ -116,8 +116,8 @@ class App(object):
             if("&" in linkString):
                     linkString= linkString.split("&",1)[0]
             if(len(linkString)==11):
-                return linkString
-        else: return linkString
+                return (linkString,True)
+        else: return (linkString,False)
             
     def openDownloadFolder(self):
         os.startfile(os.path.join(os.getcwd(), "./Downloads"))
@@ -139,7 +139,7 @@ class App(object):
             self.root.clipboard_append(inp) # Append to system clipboard
     
     def submitCallBack(self):
-        code = self.getUrlCode(self.url.get())
+        (code,isYoutube) = self.getUrlCode(self.url.get())
         format = self.format.get()
         browser = self.browser.get()
         name = self.format.get()+"["+code+"]"
@@ -149,7 +149,7 @@ class App(object):
                 if  name in self.progressDic:
                     self.log(name+" is already downloading!")
                     #handler.terminate()
-                DownloadThreadHandler(self,format,code, name,browser)
+                DownloadThreadHandler(self,format,code, name,browser,isYoutube or "x.com/" in code)
         else:
                  self.log(name+" is already downloading!")
                 

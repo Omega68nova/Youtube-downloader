@@ -23,7 +23,7 @@ class DownloadThreadHandler(object):
         Removes the progress bar or handler of the name with a code (-1 = already downloaded, 0 or higher = good download, -2 cancelled, other negative numbers won't give any messages.).\n
     Aside from that it requires a format (for now accepted values are "audio" and "video"), youtube url (the 11 char code at the end of youtube videos), and the name for distinction by the app.
     """    
-    def __init__(self, app, format, url, name,browser):
+    def __init__(self, app, format, url, name,browser,isYoutube):
         self.app=app
         self.app.log("Format:"+format)
         self.format=format
@@ -33,7 +33,7 @@ class DownloadThreadHandler(object):
         self.url=url
         self.name = name
         self.logger= LogTreater(app, self.name)
-        app.addBar(name,(format=="Video" or format=="Default"))
+        app.addBar(name,((format=="Video" or format=="Default") and (isYoutube)))
         self.thread = Thread(target=self.run)
         self.thread.start()
     def terminate(self):
