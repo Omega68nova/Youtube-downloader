@@ -149,7 +149,7 @@ class App(object):
                 if  name in self.progressDic:
                     self.log(name+" is already downloading!")
                     #handler.terminate()
-                DownloadThreadHandler(self,format,code, name,browser,isYoutube or "x.com/" in code)
+                DownloadThreadHandler(self,format,code, name,browser,isYoutube or "x.com/" in code or "reddit.com/" in code)
         else:
                  self.log(name+" is already downloading!")
                 
